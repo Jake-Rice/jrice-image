@@ -1,8 +1,7 @@
 var express = require('express');
 var app = express();
 var mongo = require('mongodb');
-var Bing=require('bing.search');
-var search = new Bing(process.env.API_KEY);
+var request=require('request');
 
 require('dotenv').config({
   silent: true
@@ -23,11 +22,37 @@ app.get('/', function (req, res) {
 });
 
 app.get('/api/imagesearch/:url', function (req, res) {
-  var term=req.url.slice(17, req.url.indexOf('?')).replace("%20"," ");
-  
-  var query=req.url.slice(req.url.indexOf('?')+1);
-  console.log(term);
+  var query=req.url.slice(17);
+  console.log(process.env.API_KEY);
   console.log(query);
-  res.type('text/plain');
-  res.send("Term: "+ term +"\nQuery: "+ query);
+  request({
+    uri: "https://api.cognitive.microsoft.com/bing/v5.0/images/search?q="+query,
+    method: "GET",
+    timeout: 10000,
+    followRedirect: true,
+    maxRedirects: 10,
+    headers: {Host: "api.cognitive.microsoft.com",
+    "Ocp-Apim-Subscription-Key": process.env.API_KEY}
+  }, function(e, response, body){
+    if (e) throw e;
+    else {
+      parseResponse(body, function (r) {
+        res.type('application/json');
+        res.send(r);
+      });
+    }
+  });
 });
+
+function parseResponse (body, callback) {
+  var output=[];
+  var results=JSON.parse(body);
+  results.value.forEach(function (element, index, array) {
+    output.push({
+      name: element.name,
+      image_url: element.contentUrl,
+      page_url: element.hostPageUrl
+    });
+  });
+  callback(output);
+}
