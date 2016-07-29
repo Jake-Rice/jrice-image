@@ -52,7 +52,7 @@ app.get('/api/imagesearch/:url', function (req, res) {
   });
 });
 
-app.get('/api/latest/imagesearch/', function (req, res) {
+app.get('/api/latest/imagesearch', function (req, res) {
   searches.find().sort({_id: -1}).toArray(function(e,r){
     r=r.slice(0,10);
     r.forEach(function (e,i,a) {
