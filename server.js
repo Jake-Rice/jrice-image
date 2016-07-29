@@ -23,9 +23,12 @@ app.get('/', function (req, res) {
 
 app.get('/api/imagesearch/:url', function (req, res) {
   var query=req.url.slice(17).replace("?","&");
+  var searchTerm;
+  if (query.indexOf("&") > -1) searchTerm=query.slice(0,query.indexOf("&"));
+  else searchTerm=query;
   searches.insert({
     _id: Date.now(),
-    term: decodeURIComponent(query.slice(0,query.indexOf("&"))),
+    term: decodeURIComponent(searchTerm),
     when: new Date().toLocaleString()
   });
   console.log(process.env.API_KEY);
