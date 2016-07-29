@@ -17,7 +17,8 @@ mongo.MongoClient.connect(process.env.MONGODB_URI || 'mongodb://0.0.0.0:27017/jr
 });
 
 app.get('/', function (req, res) {
-  res.send('Hello World!');
+  res.type('text/plain');
+  res.send('Search for images like this: http://jrice-images.herokuapp.com/api/imagesearch/[YOUR QUERY HERE]?offset=[NUMBER OF RESULTS TO SKIP]&count=[NUMBER OF RESULTS]\nAnd see the latest searches like this: http://jrice-images.herokuapp.com/api/latest/imagesearch/');
 });
 
 app.get('/api/imagesearch/:url', function (req, res) {
