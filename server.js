@@ -7,13 +7,12 @@ require('dotenv').config({
   silent: true
 });
 
-//var sites;
+var searches;
 
 mongo.MongoClient.connect(process.env.MONGODB_URI || 'mongodb://0.0.0.0:27017/jrice-image', function(err, db) {
   if (err) console.log(err);
   else console.log('Successfully connected to MongoDB');
-  //sites=db.collection('sites');
-  
+  searches=db.collection('searches');
   app.listen(process.env.PORT || 8080);
 });
 
@@ -22,7 +21,12 @@ app.get('/', function (req, res) {
 });
 
 app.get('/api/imagesearch/:url', function (req, res) {
-  var query=req.url.slice(17);
+  var query=req.url.slice(17).replace("?","&");
+  searches.insert({
+    _id: Date.now(),
+    term: decodeURIComponent(query.slice(0,query.indexOf("&"))),
+    when: new Date().toLocaleString()
+  });
   console.log(process.env.API_KEY);
   console.log(query);
   request({
@@ -41,6 +45,17 @@ app.get('/api/imagesearch/:url', function (req, res) {
         res.send(r);
       });
     }
+  });
+});
+
+app.get('/api/latest/imagesearch/', function (req, res) {
+  searches.find().sort({_id: -1}).toArray(function(e,r){
+    r=r.slice(0,10);
+    r.forEach(function (e,i,a) {
+      delete e['_id'];
+    });
+    res.type('text/plain');
+    res.send(r);
   });
 });
 
